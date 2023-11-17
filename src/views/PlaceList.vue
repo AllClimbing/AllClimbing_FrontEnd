@@ -11,6 +11,8 @@
     .content-container{
         max-width:39rem;
         min-height: 69.5rem;
+        height: 94vh;
+
         color:white;
         background-color:#292929;
     }

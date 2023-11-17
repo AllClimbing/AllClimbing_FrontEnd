@@ -11,6 +11,7 @@
 <style scoped>
     .content-container{
         max-width:39rem;
+        height: 94vh;
         min-height: 69.5rem;
         color:white;
         background-color:#292929;
