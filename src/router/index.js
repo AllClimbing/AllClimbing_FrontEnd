@@ -28,6 +28,11 @@ const router = createRouter({
       path: '/mypage',
       name: 'mypage',
       component: () => import('../views/MyPage.vue')
+    },
+    {
+      path: '/detail/:id', // 수정된 부분
+      name: 'detail',
+      component: () => import('../views/ListDetail.vue')
     }
   ]
 })

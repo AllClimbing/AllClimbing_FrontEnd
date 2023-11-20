@@ -1,11 +1,13 @@
 <script setup>
 import { onBeforeMount,onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import '@/assets/css/PlaceList.css';
 
+const router = useRouter();
 const listCnt = ref(0);
 const location = ref('');
 const gymList = ref([]);
 let isLoading = ref(true);
-
 
 const initMap = function () {
 };
@@ -15,10 +17,17 @@ onMounted(() => {
   nearPlaces();
 });
 
+
+//TODO : utils.js로 빼기
 const getDistanceFormat = (dist)=> {
     if(dist < 1000) return `${dist} M`
     return `${Math.round(dist/100)/10} KM`
 }
+
+const routeToDetail = (id) => {
+  router.push(`/detail/${id}`);
+};
+
 
 //마운트전에 해버리고
 onBeforeMount(() => {
@@ -104,6 +113,7 @@ const placesSearchCB = (data, status) => {
                     class="gym_content_container"
                     v-for="gym in gymList"
                     :key="gym.place_name"
+                    @click="routeToDetail(gym.id)"
                 >
                     <div class="gym-info__logo"></div>
                     <div class="gym-info__content">
@@ -124,149 +134,4 @@ const placesSearchCB = (data, status) => {
   </template>
 
 <style scoped>
-    .content-container{
-        max-width:39rem;
-        min-height: 69.5rem;
-        height: 94vh;
-
-        padding: 1.2rem 1.6rem;
-
-        color:white;
-        background-color:#292929;
-    }
-
-    form {
-        width: 35.6rem;
-        height: 5.8rem;
-        text-align: center;
-
-        font-size: 2rem;
-        font-weight: bold;
-        
-        margin-bottom: 1.9rem;
-    }
-    input[type="search"] {
-        width: 100%;
-        height: 100%;
-        background-color: #4A4A4A;
-        border: 1px solid #4A4A4A;
-        border-radius: 1rem;/* 굴곡 주면 padding 값도 그에 상응하게 적용하는 것이 좋음 */
-        padding: 30px;/* 내용물 작성했을 때 여백감 */
-        color:#CCCCCC;
-    }
-
-    input:focus {
-        width:100%;
-        background-color: #4A4A4A;
-        border: 1px solid #4A4A4A;
-    }
-    .msg{
-        font-size: 1.4rem;
-        text-align: center;
-        margin-bottom: 3.4rem;
-    }
-
-    .loadingMsg{
-      font-size: 2.4rem;
-      text-align: center;
-      margin-bottom: 3.4rem;
-      height: 82vh;
-      min-height: 60vh;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .loadingMsg img{
-      width: 10rem;
-      height: 10rem;
-      margin-bottom: 1.6rem;
-    }
-
-    .gym-list{
-        width: 35.8rem;
-        height: 100%;
-
-    }
-
-    .gym_content_container{
-        width: 32.6rem;
-        height: 4.6rem;
-
-        background-color: #1C1C1C;
-        border-radius: 1rem;
-        margin-bottom: 1.6rem;
-        padding: 1.6rem;
-
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        cursor:pointer;
-    }
-
-    .gym-info__content__name{
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin-bottom: 0.4rem;
-    }
-
-    .gym-info__content__address{
-        font-size: 1.2rem;
-        margin-bottom: 0.4rem;
-    }
-
-    .gym-info__content__phone{
-        font-size: 1.2rem;
-        margin-bottom: 0.4rem;
-    }
-
-    .gym-info__logo {
-        width: 4.8rem;
-        height: 4.8rem;
-        border-radius: 50%;
-        background-color: #36DDAB;
-        margin-right: 1.6rem;
-    }
-
-    .gym-info__content {
-      width: 70%;
-      height: 120%;
-
-      font-size: 1.3rem;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: flex-start;
-
-    }
-    .gym-info__content__distance {
-        width: 20%;
-        height: 100%;
-
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-
-        color: #999999;
-    }
-
-    .distance_section{
-      width: 100%;
-      height: 140%;
-
-      display: flex;
-      justify-content: center;
-      align-items:end;
-    }
-
-    .distance_section img{
-      width: 2rem;
-      height: 2rem;
-      margin-right: 0.4rem;
-      margin-bottom: 0.3rem;
-    }
 </style>
