@@ -64,18 +64,34 @@ function nearPlaces() {
   });
 }
 
-function searchPlaces() {
+const searchPlaces = function () {
+
+  console.log("일단여기까지?");
+
+  navigator.geolocation.getCurrentPosition((position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
   // 장소 검색 객체를 생성합니다
   const ps = new kakao.maps.services.Places();
-  const keyword = document.getElementById('keyword').value;
+  console.log(location.value);
+  console.log(navigator.geolocation.getCurrentPosition);
+
+  const keyword = location.value;
 
   if (!keyword.replace(/^\s+|\s+$/g, '')) {
     alert('키워드를 입력해주세요!');
     return false;
   }
 
+  const currentCoordinate = new kakao.maps.LatLng(latitude, longitude);
+  const options = {
+        location: currentCoordinate,
+        size:8,
+  };
+
   // 장소검색 객체를 통해 키워드로 장소검색을 요청합니다
-  ps.keywordSearch(keyword, placesSearchCB);
+  ps.keywordSearch(keyword+" 클라이밍", placesSearchCB, options);
+});
 }
 
 // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
@@ -95,12 +111,13 @@ const placesSearchCB = (data, status) => {
             return;
     }
 }
+
 </script>
 
 <template>
       <div class="content-container">
-          <form>
-              <input v-model="location" type="search" name="location" placeholder="내 주변 암장 검색">
+          <form @submit.prevent="searchPlaces">
+              <input v-model="location" type="search" name="location" placeholder="내 주변 암장 검색" >
           </form>
           <div class="loadingMsg" v-if="isLoading">
             <img src="@/assets/loading.svg" alt="로딩중...">
