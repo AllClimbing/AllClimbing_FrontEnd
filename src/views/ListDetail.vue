@@ -9,7 +9,6 @@
     const gymData = ref({});
     const reviewData = ref([]);
     const title = ref("제목");
-    const hasComment = ref(true);
 
     onBeforeMount(async () => {
         try {
@@ -17,18 +16,23 @@
             const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
             gymData.value = gymResponse.data;
             title.value = gymData.value.gymName;
-            console.log(gymData.value.contact);
 
             // 서버에서 reviewData 불러오기
             const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
             reviewData.value = reviewResponse.data;
-
             isLoading.value = false;
-            console.log(reviewData.value);
-        } catch (error) {
-            console.error(error);
+        } catch (e) {
+            console.error("데이터 로딩에 실패했습니다");
         }
     });
+
+    const convertVisitDate = (date) => {
+        return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
+    } 
+
+    const convertRegDate = (date) => {
+        return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} ${date.substring(11, 13)}:${date.substring(14, 16)} 작성`;
+    }
 
     onMounted(() => {
     });
@@ -43,7 +47,9 @@
         </div>
         <div v-else>
             <div class="header">
-                <div class="left_button"><img src="@/assets/backArrow.svg"></div>
+                <div class="left_button"
+                    @click="$router.go(-1)"
+                ><img src="@/assets/backArrow.svg"></div>
                 <p>{{ title }}</p>
                 <div class="right_button"><img src="@/assets/addBtn.svg"></div>
             </div>
@@ -89,36 +95,21 @@
             </div>
             <div class="review_container">
                 <h2>고객 리뷰</h2>
-                <div class="review_content">
+                <div 
+                    v-for="review in reviewData" 
+                    :key="review.gymId" 
+                    class="review_content"
+                >
                     <div class="review_card">
                         <div class="header_section">
                             <img src="@/assets/profile.svg" alt="댓글 작성자">
-                            <p class="review_writer">닉네임</p>
-                            <p>방문일자 : 23.11.16</p>
+                            <p class="review_writer">{{ review.userId }}</p>
+                            <p class="visit_date"> {{ convertVisitDate(review.visitDate) }} </p>
                         </div>
-                        <p class="review_content">다른 지점에 비해 넓고 좋네요.
-                            직원분들 친절하셔서 모르는 문제 잘 알려주시고 휴식공간도 쾌적해서 시간보내기 좋습니다. 김남준 사랑해...</p>
-                        <div v-if="hasComment" class="btn_section">
-                            <div class="btn_comment">댓글 1 개 더보기</div>
-                        </div>
-                    </div>
-                    <div class="review_card">
-                        <div class="header_section">
-                            <img src="@/assets/profile.svg" alt="댓글 작성자">
-                            <p class="review_writer">닉네임</p>
-                            <p>방문일자 : 23.11.16</p>
-                        </div>
-                        <p class="review_content">다른 지점에 비해 넓고 좋네요.
-                            직원분들 친절하셔서 모르는 문제 잘 알려주시고 휴식공간도 쾌적해서 시간보내기 좋습니다. 김남준 사랑해...</p>
-                    </div>
-                    <div class="review_card">
-                        <div class="header_section">
-                            <img src="@/assets/profile.svg" alt="댓글 작성자">
-                            <p class="review_writer">닉네임</p>
-                            <p>방문일자 : 23.11.16</p>
-                        </div>
-                        <p class="review_content">다른 지점에 비해 넓고 좋네요.
-                            직원분들 친절하셔서 모르는 문제 잘 알려주시고 휴식공간도 쾌적해서 시간보내기 좋습니다. 김남준 사랑해...</p>
+                        <p class="review_content">{{ review.content }}</p>
+                        <div class="reg_date">
+                            <p>{{ convertRegDate(review.regDate) }}</p>
+                        </div> 
                     </div>
                 </div>
             </div>
@@ -156,6 +147,7 @@
     margin-left: 1.6rem;
 
     margin-top: 0.2rem;
+    cursor: pointer;
 }
 .right_button{
     width: 2.4rem;
@@ -229,9 +221,7 @@
 .review_container{
     width: 32rem;
     height: 100%;
-    margin-top: 1.6rem;
     margin-left: 1.6rem;
-    margin-bottom: 1.6rem;
 
     display: flex;
     flex-direction: column;
@@ -255,7 +245,7 @@
 
     background-color: #1C1C1C;
     border-radius: 0.5rem;
-    padding: 2rem;
+    padding: 0.75rem 2rem;
 
     margin-bottom: 1.6rem;
 }
@@ -276,6 +266,7 @@
     height: 2.4rem;
 
     margin: 0.5rem;
+    margin-top: 0.7rem;
 }
 
 .review_writer{
@@ -287,10 +278,18 @@
     font-size: 1.3rem;
 }
 
-.btn_section{
-    margin-top: 1.8rem;
-    font-size: 1.6rem;
-    text-align: center;
+.reg_date{
+    margin-top: 1rem;
+    font-size: 1.3rem;
+    text-align: right;
+    color: #cccccc;
+}
+
+.visit_date{
+    margin-top: 1rem;
+    font-size: 1.3rem;
+    text-align: right;
+    color: #cccccc;
 }
 
 </style>
