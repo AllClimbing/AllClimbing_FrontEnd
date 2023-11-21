@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../components/common/AppLayout.vue'
+import { useUserStore } from '../stores/user'
+import axios from 'axios';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +15,7 @@ const router = createRouter({
       path: '/list',
       name: 'list',
       component: () => import('../views/PlaceList.vue')
+
     },
     {
       path: '/wishlist',
@@ -45,6 +48,14 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue')
     }
   ]
+})
+
+router.beforeEach((to, from) => {
+  const store = useUserStore();
+  let validation = store.validateToken();
+  console.log(validation);
+  
+  return true;
 })
 
 export default router
