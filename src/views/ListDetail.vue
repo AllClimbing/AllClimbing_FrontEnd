@@ -1,9 +1,10 @@
 <script setup>
-    import { useRoute } from 'vue-router';
+    import { useRoute, useRouter } from 'vue-router';
     import { onBeforeMount, onMounted, ref, computed } from 'vue';
     import axios from 'axios';
 
     const route = useRoute();
+    const router = useRouter();
     const id = ref(route.params.id);
     const isLoading = ref(true);
     const gymData = ref({});
@@ -50,6 +51,10 @@
         }
     }
 
+    const RouteForAddReview = (id) => {
+        router.push(`/review/${id}`);
+    }  
+
     onMounted(() => {
     });
 
@@ -82,11 +87,6 @@
                         {{gymData.parking ? "주차 가능" : "주차 불가"}}, 
                         {{gymData.shower ? "샤워 가능" : "샤워 불가"}}
                     </p>
-                    <!-- <br/> -->
-                    <!-- <p>연락처 : {{gymData.contact || '010-4580-7180'}}</p>
-                    <p>카카오맵 바로가기 : 
-                        <a class='external_link' v-bind:href="`https://place.map.kakao.com/${gymData.gymId}`">바로가기</a>
-                    </p> -->
                 </div>
             </div>
 
@@ -135,6 +135,12 @@
             </div>
             <div class="review_container">
                 <h2>고객 리뷰</h2>
+                <div class="review_add_button"
+                    @click="RouteForAddReview(gymData.gymId)"
+                >
+                    <img src="@/assets/reviewAddBtn.svg" alt="리뷰 작성하기">
+                    <p>리뷰 작성하기</p>
+                </div>
                 <div 
                     v-for="review in displayedReview" 
                     :key="review.gymId" 
@@ -215,6 +221,7 @@
     justify-content: space-between;
     align-items: start;
     margin-left: 1.6rem;
+    margin-bottom: 1.6rem;
 }
 
 .gym_info_external {
@@ -287,6 +294,33 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: start;
+}
+
+.review_add_button{
+    width: 33.6rem;
+    height: 3.2rem;
+    background-color: #4A4A4A;
+    border-radius: 1rem;
+
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.6rem;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #cccccc;
+
+    cursor: pointer;
+}
+
+.review_add_button > img{
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
 }
 
 .review_content{

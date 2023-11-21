@@ -3,7 +3,7 @@
 
 <template>
     <div class="content-container">
-        마이페이지 입니다
+        마이페이지 입니다.
     </div>
 </template>
 
