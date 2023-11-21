@@ -50,12 +50,44 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from) => {
-  const store = useUserStore();
-  let validation = store.validateToken();
-  // console.log(validation);
-  
-  return true;
+//전역 가드 설정
+router.beforeEach(async (to, from) => {
+  console.log(to)
+  if (to.name == 'login'){
+    return true;
+  } 
+  const token = window.localStorage.getItem('access-token');
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    return { name: "login" };
+  }
+
+  let isAuth = false;
+
+  console.log(token);
+  axios.get('http://localhost:8080/api/user/validation?token=' + token)
+    .then(response => {
+      console.log("서버응답결과 : "+response.data);
+      if (response.data == true) {
+        console.log("성공!")
+        isAuth = true;
+      }
+    })
+    .then(()=>{
+      if (isAuth){
+        return true;
+      } else {
+        console.error('Error sending data to server:', error);
+        alert("로그인이 필요합니다.");
+      return { name: "login" };
+      }
+    })
+    .catch(error => {
+      console.error('Error sending data to server:', error);
+      alert("로그인이 필요합니다.");
+      return { name: "login" };
+    });
+
 })
 
 export default router
