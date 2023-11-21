@@ -49,39 +49,33 @@ const router = createRouter({
   ]
 })
 
-//전역 가드 설정
-router.beforeEach((to, from) => {
-  if (to.name == 'login') {
-    return true
+// 전역 가드 설정
+router.beforeEach(async (to, from, next) => {
+  if (to.name === 'login') {
+    return next();
   }
-  const token = window.localStorage.getItem('access-token')
+
+  const token = window.localStorage.getItem('access-token');
   if (!token) {
-    alert('로그인이 필요합니다.')
-    router.push('/login')
+    alert('로그인이 필요합니다.');
+    return next('/login');
   }
 
-  let isAuth = false
+  try {
+    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token);
+    const isAuth = response.data;
 
-  axios
-    .get('http://localhost:8080/api/user/validation?token=' + token)
-    .then((response) => {
-      if (response.data == true) {
-        isAuth = true
-      }
-    })
-    .then(() => {
-      if (isAuth) {
-        router.push({ name: to.name })
-      } else {
-        alert('로그인이 필요합니다.')
-        router.push('/login')
-      }
-    })
-    .catch((error) => {
-      console.error('Error sending data to server:', error)
-      alert('로그인이 필요합니다.')
-      router.push('/login')
-    })
-})
+    if (isAuth) {
+      next();
+    } else {
+      alert('로그인이 필요합니다.');
+      next('/login');
+    }
+  } catch (error) {
+    console.error('Error sending data to server:', error);
+    alert('로그인이 필요합니다.');
+    next('/login');
+  }
+});
 
 export default router
