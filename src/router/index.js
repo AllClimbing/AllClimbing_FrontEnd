@@ -33,6 +33,16 @@ const router = createRouter({
       path: '/detail/:id', // 수정된 부분
       name: 'detail',
       component: () => import('../views/ListDetail.vue')
+    },
+    {
+      path: '/review/:id',
+      name: 'writeReview',
+      component: () => import('../views/WriteReview.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue')
     }
   ]
 })
