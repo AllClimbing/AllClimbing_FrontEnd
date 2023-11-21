@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../components/common/AppLayout.vue'
 import { useUserStore } from '../stores/user'
-import axios from 'axios';
+import axios from 'axios'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,7 +15,6 @@ const router = createRouter({
       path: '/list',
       name: 'list',
       component: () => import('../views/PlaceList.vue')
-
     },
     {
       path: '/wishlist',
@@ -51,43 +50,38 @@ const router = createRouter({
 })
 
 //전역 가드 설정
-router.beforeEach(async (to, from) => {
-  console.log(to)
-  if (to.name == 'login'){
-    return true;
-  } 
-  const token = window.localStorage.getItem('access-token');
+router.beforeEach((to, from) => {
+  if (to.name == 'login') {
+    return true
+  }
+  const token = window.localStorage.getItem('access-token')
   if (!token) {
-    alert("로그인이 필요합니다.");
-    return { name: "login" };
+    alert('로그인이 필요합니다.')
+    router.push('/login')
   }
 
-  let isAuth = false;
+  let isAuth = false
 
-  console.log(token);
-  axios.get('http://localhost:8080/api/user/validation?token=' + token)
-    .then(response => {
-      console.log("서버응답결과 : "+response.data);
+  axios
+    .get('http://localhost:8080/api/user/validation?token=' + token)
+    .then((response) => {
       if (response.data == true) {
-        console.log("성공!")
-        isAuth = true;
+        isAuth = true
       }
     })
-    .then(()=>{
-      if (isAuth){
-        return true;
+    .then(() => {
+      if (isAuth) {
+        router.push({ name: to.name })
       } else {
-        console.error('Error sending data to server:', error);
-        alert("로그인이 필요합니다.");
-      return { name: "login" };
+        alert('로그인이 필요합니다.')
+        router.push('/login')
       }
     })
-    .catch(error => {
-      console.error('Error sending data to server:', error);
-      alert("로그인이 필요합니다.");
-      return { name: "login" };
-    });
-
+    .catch((error) => {
+      console.error('Error sending data to server:', error)
+      alert('로그인이 필요합니다.')
+      router.push('/login')
+    })
 })
 
 export default router
