@@ -27,36 +27,16 @@ export const useUserStore = defineStore('user', () => {
         console.log(loginUserId.value);
 
       })
+      .then(() =>
+      {router.push({ name: "home" });})
       .catch(() => {
 
       })
 
-    router.push({ name: "home" });
-  }
-
-  const validateToken = async () => {
-    const token = window.localStorage.getItem('access-token');
-    if (!token) {
-      return false;
-    }
-
-    // console.log(token);
-    // axios.post('http://localhost:8080/api/user/validation', token, {
-    //   headers: {
-    //     'Content-Type': 'text/plain', // Content-Type을 text/plain으로 설정
-    //   }})
-    //   .then(response => {
-    //     console.log('Server response:', response.data);
-    //     // 성공적으로 서버 응답을 받았을 때 수행할 작업
-    //   })
-    //   .catch(error => {
-    //     console.error('Error sending data to server:', error);
-    //   });
-
-    return true;
-
   }
 
 
-  return { userLogin, loginUserId, validateToken }
+
+
+  return { userLogin, loginUserId}
 })
