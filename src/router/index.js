@@ -53,7 +53,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const store = useUserStore();
   let validation = store.validateToken();
-  console.log(validation);
+  // console.log(validation);
   
   return true;
 })
