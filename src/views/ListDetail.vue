@@ -1,6 +1,6 @@
 <script setup>
     import { useRoute } from 'vue-router';
-    import { onBeforeMount, onMounted, ref } from 'vue';
+    import { onBeforeMount, onMounted, ref, computed } from 'vue';
     import axios from 'axios';
 
     const route = useRoute();
@@ -9,6 +9,10 @@
     const gymData = ref({});
     const reviewData = ref([]);
     const title = ref("제목");
+    const displayCount = ref(4);
+
+    const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
+    const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
 
     onBeforeMount(async () => {
         try {
@@ -26,12 +30,24 @@
         }
     });
 
+
+
     const convertVisitDate = (date) => {
         return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
     } 
 
     const convertRegDate = (date) => {
         return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} ${date.substring(11, 13)}:${date.substring(14, 16)} 작성`;
+    }
+
+    const showMoreReviews = () => {
+        if (hasMoreItems.value) {
+            if(displayCount.value + 4 > reviewData.value.length){
+                displayCount.value = reviewData.value.length;
+            } else {
+                displayCount.value += 4;
+            }
+        }
     }
 
     onMounted(() => {
@@ -66,11 +82,35 @@
                         {{gymData.parking ? "주차 가능" : "주차 불가"}}, 
                         {{gymData.shower ? "샤워 가능" : "샤워 불가"}}
                     </p>
-                    <br/>
-                    <p>연락처 : {{gymData.contact || '010-4580-7180'}}</p>
+                    <!-- <br/> -->
+                    <!-- <p>연락처 : {{gymData.contact || '010-4580-7180'}}</p>
                     <p>카카오맵 바로가기 : 
                         <a class='external_link' v-bind:href="`https://place.map.kakao.com/${gymData.gymId}`">바로가기</a>
-                    </p>
+                    </p> -->
+                </div>
+            </div>
+
+            <div class="gym_info_external">
+                <h2>외부 링크</h2>
+                <div class="external_icon_content">
+                    <div class="external_icon">
+                        <a class='external_link' v-bind:href="`https://place.map.kakao.com/${gymData.gymId}`">
+                            <img src="@/assets/map.svg" alt="카카오맵">
+                        </a>
+                        <p>카카오맵</p>
+                    </div>
+                    <div class="external_icon">
+                        <a class='external_link' v-bind:href="`https://place.map.kakao.com/${gymData.gymId}`">
+                            <img src="@/assets/link.svg" alt="공식 홈페이지">
+                        </a>
+                        <p>공식 홈페이지</p>
+                    </div>
+                    <div class="external_icon">
+                        <a class='external_link' v-bind:href="`tel:010-4580-7180`">
+                            <img src="@/assets/call.svg" alt="전화하기">
+                        </a>
+                        <p>전화하기</p>
+                    </div>
                 </div>
             </div>
             <div class="pill_badge_container">
@@ -96,7 +136,7 @@
             <div class="review_container">
                 <h2>고객 리뷰</h2>
                 <div 
-                    v-for="review in reviewData" 
+                    v-for="review in displayedReview" 
                     :key="review.gymId" 
                     class="review_content"
                 >
@@ -111,6 +151,16 @@
                             <p>{{ convertRegDate(review.regDate) }}</p>
                         </div> 
                     </div>
+                </div>
+                <div class="show_more_button_container">
+                    <div
+                    v-if="hasMoreItems"
+                    @click="showMoreReviews"
+                    class="show_more_button"
+                >
+                    <img src="@/assets/underArrow.svg" alt="더보기 버튼">
+                    <p>리뷰 더보기</p>
+                </div>
                 </div>
             </div>
         </div>
@@ -158,6 +208,16 @@
 }
 
 .gym_info {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    margin-left: 1.6rem;
+}
+
+.gym_info_external {
     width: 100%;
 
     display: flex;
@@ -291,5 +351,73 @@
     text-align: right;
     color: #cccccc;
 }
+
+.show_more_button_container{
+    width: 100%;
+    height: 100%;
+
+    margin-left: 2rem;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.show_more_button{
+    width: 10rem;
+    height: 3.2rem;
+    background-color: #4A4A4A;
+    border-radius: 1rem;
+
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.6rem;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #cccccc;
+
+    cursor: pointer;
+}
+
+.external_icon_content{
+    width: 35.8rem;
+    height: 100%;
+    border-radius: 0.5rem;
+
+    padding: 1.2rem 0 0 0;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+
+    background-color: #1C1C1C;
+}
+
+.external_icon{
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 1.4rem;
+    color:#cccccc;
+
+}
+
+.external_icon img{
+    width: 6rem;
+    height: 6rem;
+}
+
+
 
 </style>
