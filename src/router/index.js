@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../components/common/AppLayout.vue'
-import { useUserStore } from '../stores/user'
 import axios from 'axios'
 
 const router = createRouter({
@@ -52,30 +51,30 @@ const router = createRouter({
 // 전역 가드 설정
 router.beforeEach(async (to, from, next) => {
   if (to.name === 'login') {
-    return next();
+    return next()
   }
 
-  const token = window.localStorage.getItem('access-token');
+  const token = window.localStorage.getItem('access-token')
   if (!token) {
-    alert('로그인이 필요합니다.');
-    return next('/login');
+    alert('로그인이 필요합니다.')
+    return next('/login')
   }
 
   try {
-    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token);
-    const isAuth = response.data;
+    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token)
+    const isAuth = response.data
 
     if (isAuth) {
-      next();
+      next()
     } else {
-      alert('로그인이 필요합니다.');
-      next('/login');
+      alert('로그인이 필요합니다.')
+      next('/login')
     }
   } catch (error) {
-    console.error('Error sending data to server:', error);
-    alert('로그인이 필요합니다.');
-    next('/login');
+    console.error('Error sending data to server:', error)
+    alert('로그인이 필요합니다.')
+    next('/login')
   }
-});
+})
 
 export default router
