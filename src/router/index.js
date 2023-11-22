@@ -53,13 +53,13 @@ const router = createRouter({
 // 전역 가드 설정
 router.beforeEach(async (to, from, next) => {
   if (to.name === 'login') {
-    return next();
+    return next()
   }
 
-  const token = window.localStorage.getItem('access-token');
+  const token = window.localStorage.getItem('access-token')
   if (!token) {
-    alert('로그인이 필요합니다.');
-    return next('/login');
+    alert('로그인이 필요합니다.')
+    return next('/login')
   }
 
   try {
@@ -70,17 +70,17 @@ router.beforeEach(async (to, from, next) => {
 
     if (isAuth) {
       useUserStore().loginUserId = ((JSON.parse(atob((token.split("."))[1])))['userId'])
-      // console.log(useUserStore().loginUserId);
       next();
+
     } else {
-      alert('로그인이 필요합니다.');
-      next('/login');
+      alert('로그인이 필요합니다.')
+      next('/login')
     }
   } catch (error) {
-    console.error('Error sending data to server:', error);
-    alert('로그인이 필요합니다.');
-    next('/login');
+    console.error('Error sending data to server:', error)
+    alert('로그인이 필요합니다.')
+    next('/login')
   }
-});
+})
 
 export default router
