@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user.js';
 import axios from 'axios';
 
@@ -12,6 +12,10 @@ const gymData = ref({});
 const reviewData = ref([]);
 const title = ref("제목");
 const displayCount = ref(4);
+const userData = ref(null);
+
+const token = localStorage.getItem('access-token').split('.')
+const userId = JSON.parse(atob(token[1]))['userId'];
 
 const loginUserId = useUserStore().loginUserId;
 const keyword = {
@@ -38,7 +42,6 @@ const cancelFavorite = async () => {
     }
 }
 
-
 const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
 const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
 
@@ -57,12 +60,13 @@ onBeforeMount(async () => {
         //서버에서 찜 Data 불러오기
         const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
         isFavorite.value = favoriteResponse.data ? true : false;
+
+        const res = await axios.get(`http://localhost:8080/api/user/${userId}`);
+        userData.value = res.data;
     } catch (e) {
         console.error("데이터 로딩에 실패했습니다");
     }
 });
-
-
 
 const convertVisitDate = (date) => {
     return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
@@ -86,16 +90,33 @@ const RouteForAddReview = (id) => {
     router.push(`/review/${id}`);
 }
 
-onMounted(() => {
-});
+const deleteReview = async (gymId, reviewNo) => {
+    const body = {
+        gymId: gymId,
+        reviewNo: reviewNo
+    }
+    try{
+        await axios.delete(`http://localhost:8080/api/review/delete`, body);
+        // 프론트엔드에서 삭제한 데이터 반영해 렌더링
+        reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
 
+    } catch(e){
+        console.log("리뷰 삭제 에러");
+    }
+
+}
+
+const editReview = async (reviewId) => {
+
+}
 
 </script>
 
 <template>
     <div class="content-container">
-        <div v-if="isLoading">
-            데이터를 불러오는 중입니다.
+        <div class="loadingMsg" v-if="isLoading">
+            <img src="@/assets/loading.svg" alt="로딩중...">
+            <p>데이터를 열심히 불러오고 있어요...</p>
         </div>
         <div v-else>
             <div class="header">
@@ -182,6 +203,19 @@ onMounted(() => {
                         <div class="reg_date">
                             <p>{{ convertRegDate(review.regDate) }}</p>
                         </div>
+                        <div class="review_edit" v-if="review.userId === userData.userId">
+                            <div>
+                                <img 
+                                    src="@/assets/review_edit.svg" 
+                                    alt="수정하기"
+                                >
+                                <img 
+                                    src="@/assets/review_delete.svg" 
+                                    alt="삭제하기"
+                                    @click="deleteReview(gymData.gymId, review.reviewNo)"
+                                >
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="show_more_button_container">
@@ -199,10 +233,11 @@ onMounted(() => {
 .content-container {
     max-width: 39rem;
     min-height: 69.5rem;
-    width: 100%;
-    margin: 0 auto;
+    width: 39rem;
     height: 94vh;
-    overflow: scroll;
+    margin: 0 auto;
+    overflow-x:hidden;
+    overflow-y: scroll;
 
     color: white;
     background-color: #292929;
@@ -217,6 +252,7 @@ onMounted(() => {
     height: 5.8rem;
     font-size: 1.6rem;
     font-weight: bold;
+
 }
 
 .left_button {
@@ -230,15 +266,42 @@ onMounted(() => {
 
 .right_button {
     cursor: pointer;
+    width: 5rem;
+    height: 5rem;
 }
 
 .right_button img {
     width: 3rem;
     height: 3rem;
 
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     cursor: pointer;
 }
+
+.msg {
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 3.4rem;
+  }
+  
+  .loadingMsg {
+    font-size: 2.4rem;
+    text-align: center;
+    margin-bottom: 3.4rem;
+    height: 82vh;
+    min-height: 60vh;
+  
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .loadingMsg img {
+    width: 10rem;
+    height: 10rem;
+    margin-bottom: 1.6rem;
+  }
 
 .gym_info {
     width: 100%;
@@ -252,11 +315,11 @@ onMounted(() => {
 }
 
 .gym_info_external {
-    width: 100%;
+    width: 35.8rem;
 
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: start;
     margin-left: 1.6rem;
 }
@@ -287,7 +350,7 @@ onMounted(() => {
 
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: start;
     margin-left: 1.6rem;
 }
@@ -324,10 +387,10 @@ onMounted(() => {
 }
 
 .review_add_button {
-    width: 33.6rem;
+    width: 33.8rem;
     height: 3.2rem;
     background-color: #4A4A4A;
-    border-radius: 1rem;
+    border-radius: 0.5rem;
 
     padding: 0.5rem 1rem;
     margin-bottom: 1.6rem;
@@ -344,7 +407,7 @@ onMounted(() => {
     cursor: pointer;
 }
 
-.review_add_button>img {
+.review_add_button > img {
     width: 1.5rem;
     height: 1.5rem;
     margin-right: 0.5rem;
@@ -419,6 +482,7 @@ onMounted(() => {
     height: 100%;
 
     margin-left: 2rem;
+    margin-bottom: 1rem;
 
     display: flex;
     flex-direction: column;
@@ -433,7 +497,7 @@ onMounted(() => {
     border-radius: 1rem;
 
     padding: 0.5rem 1rem;
-    margin-bottom: 1.6rem;
+    margin-bottom: 2rem;
 
     display: flex;
     flex-direction: row;
@@ -470,13 +534,32 @@ onMounted(() => {
     justify-content: center;
     align-items: center;
 
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: #cccccc;
 
 }
 
 .external_icon img {
-    width: 6rem;
-    height: 6rem;
+    width: 4rem;
+    height: 4rem;
 }
+
+.review_edit {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+
+    font-size: 1.3rem;
+    color: #cccccc;
+}
+
+.review_edit img {
+    margin-left: 1rem;
+    cursor: pointer;
+}
+
 </style>

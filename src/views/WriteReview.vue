@@ -163,6 +163,7 @@ input[type="file"] {
   const gymData = ref({});
   const reviewData = ref([]);
   const title = ref("제목");
+  const userData = ref(null);
 
   const loginUserId = useUserStore().loginUserId;
   const keyword = {
@@ -204,6 +205,8 @@ input[type="file"] {
           //서버에서 찜 Data 불러오기
           const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
           isFavorite.value = favoriteResponse.data ? true : false;
+
+
       } catch (e) {
           console.error("데이터 로딩에 실패했습니다");
       }
@@ -274,10 +277,6 @@ input[type="file"] {
                 <label for="date-input">방문 일자</label>
                 <input id="date-input" type="date" placeholder="날짜를 선택해주세요." v-model="visitDate" />
               </div>
-              <!-- <div class="inputbox">
-                <label for="image-input">사진 선택</label>
-                <input id="image-input" type="file" ref="imageInput" @change="handleImageChange" />
-              </div> -->
             </form>
           </div>
           <button 
@@ -296,8 +295,6 @@ input[type="file"] {
 .content-container {
     max-width: 39rem;
     min-height: 69.5rem;
-    width: 100%;
-    margin: 0 auto;
     height: 94vh;
     overflow: scroll;
 
