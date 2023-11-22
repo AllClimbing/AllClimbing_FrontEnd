@@ -169,7 +169,6 @@
                             <p class="review_writer">{{ review.userId }}</p>
                             <p class="visit_date"> {{ convertVisitDate(review.visitDate) }} </p>
                         </div>
-                        <img class="review_image" :src="review.reviewImgURL+'/'+review.saveFileName" style="height : auto; width : 100px;">
                         <p class="review_content">{{ review.content }}</p>
                         <div class="reg_date">
                             <p>{{ convertRegDate(review.regDate) }}</p>
