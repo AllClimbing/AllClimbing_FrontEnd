@@ -1,6 +1,7 @@
 <script setup>
     import { useRoute, useRouter } from 'vue-router';
     import { onBeforeMount, onMounted, ref, computed } from 'vue';
+    import {useUserStore} from '@/stores/user.js';
     import axios from 'axios';
 
     const route = useRoute();
@@ -11,12 +12,19 @@
     const reviewData = ref([]);
     const title = ref("제목");
     const displayCount = ref(4);
-    const favorite = ref(false)
+
+    const loginUserId = useUserStore().loginUserId;
+    const keyword = {
+        userId : loginUserId,
+        gymId : route.params.id
+    };
+    const favoriteData = ref(null);
 
     const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
     const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
 
     onBeforeMount(async () => {
+
         try {
             // 서버에서 gymData 불러오기
             const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
@@ -29,6 +37,10 @@
             isLoading.value = false;
 
             //서버에서 찜 Data 불러오기
+            const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
+            favoriteData.value = favoriteResponse.data;
+
+            
 
         } catch (e) {
             console.error("데이터 로딩에 실패했습니다");
@@ -157,6 +169,7 @@
                             <p class="review_writer">{{ review.userId }}</p>
                             <p class="visit_date"> {{ convertVisitDate(review.visitDate) }} </p>
                         </div>
+                        <img class="review_image" :src="review.reviewImgURL+'/'+review.saveFileName" style="height : auto; width : 100px;">
                         <p class="review_content">{{ review.content }}</p>
                         <div class="reg_date">
                             <p>{{ convertRegDate(review.regDate) }}</p>
