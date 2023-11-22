@@ -14,10 +14,8 @@ export const useUserStore = defineStore('user', () => {
         localStorage.setItem('access-token', response.data)
 
         const token = response.data.split('.')
-        let id = token[1]
-        id = atob(id)
-        id = JSON.parse(id)
-        loginUserId.value = id['userId']
+        loginUserId.value = (JSON.parse(atob(token[1])))['userId']
+        
       })
       .then(() => {
         router.push('/list')

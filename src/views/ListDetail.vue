@@ -11,6 +11,7 @@
     const reviewData = ref([]);
     const title = ref("제목");
     const displayCount = ref(4);
+    const favorite = ref(false)
 
     const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
     const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
@@ -26,9 +27,13 @@
             const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
             reviewData.value = reviewResponse.data;
             isLoading.value = false;
+
+            //서버에서 찜 Data 불러오기
+
         } catch (e) {
             console.error("데이터 로딩에 실패했습니다");
         }
+
     });
 
 

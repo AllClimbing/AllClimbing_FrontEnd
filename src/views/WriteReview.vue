@@ -71,18 +71,28 @@ const submitForm = function () {
 </script>
 
 <style scoped>
-div {
-  max-width: 600px;
+#body {
+  height: 620px;
   margin: 20px auto;
   padding: 20px;
-  background-color: #101010;
   border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #101010;
   color : #ffffff;
+}
+
+#writeForm {
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .inputbox {
   background-color: #5a5a5a;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 h1 {
