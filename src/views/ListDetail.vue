@@ -90,13 +90,14 @@ const RouteForAddReview = (id) => {
     router.push(`/review/${id}`);
 }
 
-const deleteReview = async (gymId, reviewNo) => {
-    const body = {
-        gymId: gymId,
-        reviewNo: reviewNo
-    }
+const RouteForUpdateReview = (gymId, reviewNo) => {
+    router.push(`/review/${gymId}/${reviewNo}`);
+}
+
+const deleteReview = async (reviewNo) => {
+
     try{
-        await axios.delete(`http://localhost:8080/api/review/delete`, body);
+        await axios.delete(`http://localhost:8080/api/review/delete/${reviewNo}`);
         // 프론트엔드에서 삭제한 데이터 반영해 렌더링
         reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
 
@@ -208,11 +209,12 @@ const editReview = async (reviewId) => {
                                 <img 
                                     src="@/assets/review_edit.svg" 
                                     alt="수정하기"
+                                    @click="RouteForUpdateReview(gymData.gymId, review.reviewNo)"
                                 >
                                 <img 
                                     src="@/assets/review_delete.svg" 
                                     alt="삭제하기"
-                                    @click="deleteReview(gymData.gymId, review.reviewNo)"
+                                    @click.prevent="deleteReview(review.reviewNo)"
                                 >
                             </div>
                         </div>
