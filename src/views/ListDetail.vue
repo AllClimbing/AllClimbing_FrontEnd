@@ -18,33 +18,30 @@ const keyword = {
     userId: loginUserId,
     gymId: route.params.id
 };
-const favoriteData = ref(null);
-const resp = null;
-const doFavorite = async function () {
+const isFavorite = ref(false);
 
-    console.log("찜했나?" + favoriteData.value);
-    if (!favoriteData.value) {
-
-        resp = axios.post(`http://localhost:8080/api/gym/favorite/${id.value}`, keyword);
-        if (resp == 1) {
-            favoriteData.value = !favoriteData.value;
-        }
-
-    } else {
-        try {
-            resp = axios.post(`http://localhost:8080/api/gym/favorite/delete`, keyword);
-            if (resp == 1) {
-                favoriteData.value = !favoriteData.value;
-            }
-        } catch (e) {
-            console.log("찜을 해제할 때 오류가 생겼어요.");
-        }
+const doFavorite = async () => {
+    try {
+        const res =  await axios.post(`http://localhost:8080/api/gym/favorite/${id.value}`, keyword);
+         isFavorite.value = true;
+    } catch(e){
+        console.log('좋아요 에러');
     }
 }
 
+const cancelFavorite = async () => {
+    try {
+        const res =  await axios.post(`http://localhost:8080/api/gym/favorite/delete`, keyword);
+        isFavorite.value = false;
+    } catch(e){
+        console.log("찜하기 해제 에러");
+    }
+}
+
+
 const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
 const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
-const isFavorite = computed(() => { return favoriteData.value });
+// const isFavorite = computed(() => { return favoriteData.value });
 
 onBeforeMount(async () => {
 
@@ -61,14 +58,10 @@ onBeforeMount(async () => {
 
         //서버에서 찜 Data 불러오기
         const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
-        favoriteData.value = favoriteResponse.data;
-        console.log(favoriteData.value);
-
-
+        isFavorite.value = favoriteResponse.data ? true : false;
     } catch (e) {
         console.error("데이터 로딩에 실패했습니다");
     }
-
 });
 
 
@@ -110,9 +103,9 @@ onMounted(() => {
             <div class="header">
                 <div class="left_button" @click="$router.go(-1)"><img src="@/assets/backArrow.svg"></div>
                 <p>{{ title }}</p>
-                <div class="right_button" @click="doFavorite">
-                    <img v-if="isFavorite" src="@/assets/heart_fulled.svg">
-                    <img v-else="isFavorite" src="@/assets/heart_empty.svg">
+                <div class="right_button">
+                    <img v-if="isFavorite" src="@/assets/fulledHeart.svg" @click="cancelFavorite">
+                    <img v-else src="@/assets/emptyHeart.svg" @click="doFavorite">
                 </div>
             </div>
             <div class="thumbnail_img">
@@ -238,10 +231,15 @@ onMounted(() => {
 }
 
 .right_button {
-    width: 0.01rem;
-    height: 0.01rem;
-    margin-right: 8rem;
-    margin-bottom: 8rem;
+    cursor: pointer;
+}
+
+.right_button img {
+    width: 3rem;
+    height: 3rem;
+
+    margin-top: 0.75rem;
+    cursor: pointer;
 }
 
 .gym_info {
