@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../components/common/AppLayout.vue'
+import { useUserStore } from '../stores/user'
+import {ref} from 'vue';
 import axios from 'axios'
 
 const router = createRouter({
@@ -61,11 +63,15 @@ router.beforeEach(async (to, from, next) => {
   }
 
   try {
-    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token)
-    const isAuth = response.data
+    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token);
+    const isAuth = response.data;
+    
+    
 
     if (isAuth) {
-      next()
+      useUserStore().loginUserId = ((JSON.parse(atob((token.split("."))[1])))['userId'])
+      next();
+
     } else {
       alert('로그인이 필요합니다.')
       next('/login')

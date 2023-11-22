@@ -24,12 +24,19 @@
 <script setup>
 import axios from 'axios'
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
+import { useUserStore } from '../stores/user';
+
+const route = useRoute();
+const router = useRouter();
+const gymId = ref(route.params.id);
+const userId = useUserStore().loginUserId;
 
 const review = ref({
   //이건 Props로 받아와야함
-  gymId: 1796322688,
+  gymId: gymId,
   //일단 이거는 더미로
-  userId: 'ssafy2',
+  userId: userId,
   content: null,
   //이 형식으로만 넣을 수 있게 form에서 짜줘야할 듯
   visitDate: '2023-11-06'
@@ -40,8 +47,8 @@ const selectedImage = ref(null);
 const visitDate = ref(null);
 
 const handleImageChange = function (event) {
-  console.log('왜안되는데')
-  console.log(event.target.files)
+  // console.log('왜안되는데')
+  // console.log(event.target.files)
   selectedImage.value = event.target.files[0]
 }
 
@@ -52,7 +59,7 @@ const submitForm = function () {
   //formDate에 담아서 전송
   formData.append('review', new Blob([JSON.stringify(review.value)], { type: 'application/json' }))
   formData.append('image', selectedImage.value)
-  
+
 
   axios
     .post('http://localhost:8080/api/review/write', formData, {
@@ -64,6 +71,9 @@ const submitForm = function () {
       console.log('Server response:', response.data)
       // 성공적으로 서버 응답을 받았을 때 수행할 작업
     })
+    .then(() => {
+      router.push('/detail/'+gymId.value);
+    })
     .catch((error) => {
       console.error('Error sending data to server:', error)
     })
@@ -71,18 +81,28 @@ const submitForm = function () {
 </script>
 
 <style scoped>
-div {
-  max-width: 600px;
+#body {
+  height: 620px;
   margin: 20px auto;
   padding: 20px;
-  background-color: #101010;
   border-radius: 8px;
-  color : #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #101010;
+  color: #ffffff;
+}
+
+#writeForm {
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .inputbox {
   background-color: #5a5a5a;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 h1 {
@@ -118,7 +138,7 @@ h2 {
 }
 
 #text-input {
-  height : 200px;
+  height: 200px;
   border-radius: 10px;
 }
 
