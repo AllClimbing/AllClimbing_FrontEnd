@@ -3,11 +3,15 @@
     <h1>리뷰 작성</h1>
     <div id="writeForm">
       <form @submit.prevent="submitForm">
-        <div>
+        <div class="inputbox">
           <label for="text-input">내용</label>
           <input id="text-input" type="textarea" v-model="textInput" />
         </div>
-        <div>
+        <div class="inputbox">
+          <label for="date-input">방문 일자</label>
+          <input id="date-input" type="date" v-model="visitDate" />
+        </div>
+        <div class="inputbox">
           <label for="image-input">사진 선택</label>
           <input id="image-input" type="file" ref="imageInput" @change="handleImageChange" />
         </div>
@@ -31,8 +35,9 @@ const review = ref({
   visitDate: '2023-11-06'
 })
 
-const textInput = ref(null)
-const selectedImage = ref(null)
+const textInput = ref(null);
+const selectedImage = ref(null);
+const visitDate = ref(null);
 
 const handleImageChange = function (event) {
   console.log('왜안되는데')
@@ -42,12 +47,12 @@ const handleImageChange = function (event) {
 
 const submitForm = function () {
   let formData = new FormData()
-  review.value.content = textInput.value
+  review.value.content = textInput.value;
+  review.value.visitDate = visitDate.value;
   //formDate에 담아서 전송
   formData.append('review', new Blob([JSON.stringify(review.value)], { type: 'application/json' }))
-  if (selectedImage.value) {
-    formData.append('image', selectedImage.value)
-  }
+  formData.append('image', selectedImage.value)
+  
 
   axios
     .post('http://localhost:8080/api/review/write', formData, {
@@ -66,62 +71,58 @@ const submitForm = function () {
 </script>
 
 <style scoped>
- div {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+div {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #101010;
+  border-radius: 8px;
+  color : #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
-        h1 {
-            font-size: 24px;
-            color: #333;
-        }
+.inputbox {
+  background-color: #5a5a5a;
+}
 
-        form {
-            margin-top: 20px;
-        }
+h1 {
+  font-size: 24px;
+  color: #FFFFFF;
+}
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            height: 150px; /* 높이 조절 */
-            resize: vertical; /* 사용자가 높이를 조절할 수 있도록 허용 */
-        }
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
 
-        button {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
 
-        button:hover {
-            background-color: #555;
-        }
+button {
+  background-color: #36DDAB;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-        h2 {
-            font-size: 18px;
-            margin-top: 10px;
-            color: #333;
-        }
+button:hover {
+  background-color: #4A4A4A;
+}
 
-        input[type="file"] {
-            margin-top: 5px;
-        }
+h2 {
+  font-size: 18px;
+  margin-top: 10px;
+  color: #333;
+}
+
+#text-input {
+  height : 200px;
+  border-radius: 10px;
+}
+
+input[type="file"] {
+  margin-top: 5px;
+}
 </style>
