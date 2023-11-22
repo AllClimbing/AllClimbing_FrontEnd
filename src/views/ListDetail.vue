@@ -1,79 +1,102 @@
 <script setup>
-    import { useRoute, useRouter } from 'vue-router';
-    import { onBeforeMount, onMounted, ref, computed } from 'vue';
-    import {useUserStore} from '@/stores/user.js';
-    import axios from 'axios';
+import { useRoute, useRouter } from 'vue-router';
+import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { useUserStore } from '@/stores/user.js';
+import axios from 'axios';
 
-    const route = useRoute();
-    const router = useRouter();
-    const id = ref(route.params.id);
-    const isLoading = ref(true);
-    const gymData = ref({});
-    const reviewData = ref([]);
-    const title = ref("제목");
-    const displayCount = ref(4);
+const route = useRoute();
+const router = useRouter();
+const id = ref(route.params.id);
+const isLoading = ref(true);
+const gymData = ref({});
+const reviewData = ref([]);
+const title = ref("제목");
+const displayCount = ref(4);
 
-    const loginUserId = useUserStore().loginUserId;
-    const keyword = {
-        userId : loginUserId,
-        gymId : route.params.id
-    };
-    const favoriteData = ref(null);
+const loginUserId = useUserStore().loginUserId;
+const keyword = {
+    userId: loginUserId,
+    gymId: route.params.id
+};
+const favoriteData = ref(null);
+const resp = null;
+const doFavorite = async function () {
 
-    const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
-    const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
+    console.log("찜했나?" + favoriteData.value);
+    if (!favoriteData.value) {
 
-    onBeforeMount(async () => {
+        resp = axios.post(`http://localhost:8080/api/gym/favorite/${id.value}`, keyword);
+        if (resp == 1) {
+            favoriteData.value = !favoriteData.value;
+        }
 
+    } else {
         try {
-            // 서버에서 gymData 불러오기
-            const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
-            gymData.value = gymResponse.data;
-            title.value = gymData.value.gymName;
-
-            // 서버에서 reviewData 불러오기
-            const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
-            reviewData.value = reviewResponse.data;
-            isLoading.value = false;
-
-            //서버에서 찜 Data 불러오기
-            const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
-            favoriteData.value = favoriteResponse.data;
-
-            
-
-        } catch (e) {
-            console.error("데이터 로딩에 실패했습니다");
-        }
-
-    });
-
-
-
-    const convertVisitDate = (date) => {
-        return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
-    } 
-
-    const convertRegDate = (date) => {
-        return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} ${date.substring(11, 13)}:${date.substring(14, 16)} 작성`;
-    }
-
-    const showMoreReviews = () => {
-        if (hasMoreItems.value) {
-            if(displayCount.value + 4 > reviewData.value.length){
-                displayCount.value = reviewData.value.length;
-            } else {
-                displayCount.value += 4;
+            resp = axios.post(`http://localhost:8080/api/gym/favorite/delete`, keyword);
+            if (resp == 1) {
+                favoriteData.value = !favoriteData.value;
             }
+        } catch (e) {
+            console.log("찜을 해제할 때 오류가 생겼어요.");
         }
     }
+}
 
-    const RouteForAddReview = (id) => {
-        router.push(`/review/${id}`);
-    }  
+const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
+const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
+const isFavorite = computed(() => { return favoriteData.value });
 
-    onMounted(() => {
-    });
+onBeforeMount(async () => {
+
+    try {
+        // 서버에서 gymData 불러오기
+        const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
+        gymData.value = gymResponse.data;
+        title.value = gymData.value.gymName;
+
+        // 서버에서 reviewData 불러오기
+        const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
+        reviewData.value = reviewResponse.data;
+        isLoading.value = false;
+
+        //서버에서 찜 Data 불러오기
+        const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
+        favoriteData.value = favoriteResponse.data;
+        console.log(favoriteData.value);
+
+
+    } catch (e) {
+        console.error("데이터 로딩에 실패했습니다");
+    }
+
+});
+
+
+
+const convertVisitDate = (date) => {
+    return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
+}
+
+const convertRegDate = (date) => {
+    return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} ${date.substring(11, 13)}:${date.substring(14, 16)} 작성`;
+}
+
+const showMoreReviews = () => {
+    if (hasMoreItems.value) {
+        if (displayCount.value + 4 > reviewData.value.length) {
+            displayCount.value = reviewData.value.length;
+        } else {
+            displayCount.value += 4;
+        }
+    }
+}
+
+const RouteForAddReview = (id) => {
+    router.push(`/review/${id}`);
+}
+
+onMounted(() => {
+});
 
 
 </script>
@@ -85,11 +108,12 @@
         </div>
         <div v-else>
             <div class="header">
-                <div class="left_button"
-                    @click="$router.go(-1)"
-                ><img src="@/assets/backArrow.svg"></div>
+                <div class="left_button" @click="$router.go(-1)"><img src="@/assets/backArrow.svg"></div>
                 <p>{{ title }}</p>
-                <div class="right_button"><img src="@/assets/addBtn.svg"></div>
+                <div class="right_button" @click="doFavorite">
+                    <img v-if="isFavorite" src="@/assets/heart_fulled.svg">
+                    <img v-else="isFavorite" src="@/assets/heart_empty.svg">
+                </div>
             </div>
             <div class="thumbnail_img">
                 <img src="@/assets/dummy.webp" alt="썸네일">
@@ -98,11 +122,11 @@
                 <h2>암장 정보</h2>
                 <div class="gym_info_content">
                     <p>운영 시간 : 09:00 ~ 24:00</p>
-                    <p>넓이 : {{gymData.area ? gymData : 140}}  </p>
-                    <p>주소 : {{gymData.gymAddress}}</p>
+                    <p>넓이 : {{ gymData.area ? gymData : 140 }} </p>
+                    <p>주소 : {{ gymData.gymAddress }}</p>
                     <p>
-                        {{gymData.parking ? "주차 가능" : "주차 불가"}}, 
-                        {{gymData.shower ? "샤워 가능" : "샤워 불가"}}
+                        {{ gymData.parking ? "주차 가능" : "주차 불가" }},
+                        {{ gymData.shower ? "샤워 가능" : "샤워 불가" }}
                     </p>
                 </div>
             </div>
@@ -152,17 +176,11 @@
             </div>
             <div class="review_container">
                 <h2>고객 리뷰</h2>
-                <div class="review_add_button"
-                    @click="RouteForAddReview(gymData.gymId)"
-                >
+                <div class="review_add_button" @click="RouteForAddReview(gymData.gymId)">
                     <img src="@/assets/reviewAddBtn.svg" alt="리뷰 작성하기">
                     <p>리뷰 작성하기</p>
                 </div>
-                <div 
-                    v-for="review in displayedReview" 
-                    :key="review.gymId" 
-                    class="review_content"
-                >
+                <div v-for="review in displayedReview" :key="review.gymId" class="review_content">
                     <div class="review_card">
                         <div class="header_section">
                             <img src="@/assets/profile.svg" alt="댓글 작성자">
@@ -172,18 +190,14 @@
                         <p class="review_content">{{ review.content }}</p>
                         <div class="reg_date">
                             <p>{{ convertRegDate(review.regDate) }}</p>
-                        </div> 
+                        </div>
                     </div>
                 </div>
                 <div class="show_more_button_container">
-                    <div
-                    v-if="hasMoreItems"
-                    @click="showMoreReviews"
-                    class="show_more_button"
-                >
-                    <img src="@/assets/underArrow.svg" alt="더보기 버튼">
-                    <p>리뷰 더보기</p>
-                </div>
+                    <div v-if="hasMoreItems" @click="showMoreReviews" class="show_more_button">
+                        <img src="@/assets/underArrow.svg" alt="더보기 버튼">
+                        <p>리뷰 더보기</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -191,16 +205,16 @@
 </template>
 
 <style scoped>
-.content-container{
-    max-width:39rem;
+.content-container {
+    max-width: 39rem;
     min-height: 69.5rem;
-    width:100%;
+    width: 100%;
     margin: 0 auto;
     height: 94vh;
     overflow: scroll;
 
-    color:white;
-    background-color:#292929;
+    color: white;
+    background-color: #292929;
 }
 
 .header {
@@ -214,7 +228,7 @@
     font-weight: bold;
 }
 
-.left_button{
+.left_button {
     width: 2.4rem;
     height: 2.4rem;
     margin-left: 1.6rem;
@@ -222,12 +236,12 @@
     margin-top: 0.2rem;
     cursor: pointer;
 }
-.right_button{
-    width: 2.4rem;
-    height: 2.4rem;
-    margin-right: 1.6rem;
 
-    margin-top: 0.5rem;
+.right_button {
+    width: 0.01rem;
+    height: 0.01rem;
+    margin-right: 8rem;
+    margin-bottom: 8rem;
 }
 
 .gym_info {
@@ -260,15 +274,15 @@
     font-size: 1.4rem;
     line-height: 0.5rem;
 
-    color : #cccccc;
+    color: #cccccc;
 }
 
-.external_link{
+.external_link {
     color: #36DDAB;
     text-decoration: none;
 }
 
-.pill_badge_container{
+.pill_badge_container {
     width: 100%;
     height: 100%;
     margin-top: 1.6rem;
@@ -302,7 +316,7 @@
     white-space: nowrap;
 }
 
-.review_container{
+.review_container {
     width: 32rem;
     height: 100%;
     margin-left: 1.6rem;
@@ -313,7 +327,7 @@
     align-items: start;
 }
 
-.review_add_button{
+.review_add_button {
     width: 33.6rem;
     height: 3.2rem;
     background-color: #4A4A4A;
@@ -334,13 +348,13 @@
     cursor: pointer;
 }
 
-.review_add_button > img{
+.review_add_button>img {
     width: 1.5rem;
     height: 1.5rem;
     margin-right: 0.5rem;
 }
 
-.review_content{
+.review_content {
     width: 100%;
     height: 100%;
 
@@ -350,7 +364,7 @@
     align-items: start;
 }
 
-.review_card{
+.review_card {
     width: 100%;
     height: 100%;
 
@@ -361,7 +375,7 @@
     margin-bottom: 1.6rem;
 }
 
-.header_section{
+.header_section {
     width: 100%;
     height: 100%;
 
@@ -372,6 +386,7 @@
 
     font-size: 1.3rem;
 }
+
 .header_section img {
     width: 2.4rem;
     height: 2.4rem;
@@ -380,30 +395,30 @@
     margin-top: 0.7rem;
 }
 
-.review_writer{
+.review_writer {
     margin: 1rem;
     flex-grow: 2;
 }
 
-.review_content{
+.review_content {
     font-size: 1.3rem;
 }
 
-.reg_date{
+.reg_date {
     margin-top: 1rem;
     font-size: 1.3rem;
     text-align: right;
     color: #cccccc;
 }
 
-.visit_date{
+.visit_date {
     margin-top: 1rem;
     font-size: 1.3rem;
     text-align: right;
     color: #cccccc;
 }
 
-.show_more_button_container{
+.show_more_button_container {
     width: 100%;
     height: 100%;
 
@@ -415,7 +430,7 @@
     align-items: center;
 }
 
-.show_more_button{
+.show_more_button {
     width: 10rem;
     height: 3.2rem;
     background-color: #4A4A4A;
@@ -436,7 +451,7 @@
     cursor: pointer;
 }
 
-.external_icon_content{
+.external_icon_content {
     width: 35.8rem;
     height: 100%;
     border-radius: 0.5rem;
@@ -451,7 +466,7 @@
     background-color: #1C1C1C;
 }
 
-.external_icon{
+.external_icon {
     cursor: pointer;
 
     display: flex;
@@ -460,15 +475,12 @@
     align-items: center;
 
     font-size: 1.4rem;
-    color:#cccccc;
+    color: #cccccc;
 
 }
 
-.external_icon img{
+.external_icon img {
     width: 6rem;
     height: 6rem;
 }
-
-
-
 </style>
