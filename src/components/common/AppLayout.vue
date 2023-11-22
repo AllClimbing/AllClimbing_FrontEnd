@@ -19,4 +19,13 @@ import { RouterView } from "vue-router";
 
         position: relative;
     }
+
+
+    body{
+    -ms-overflow-style: none;
+    }
+    
+   ::-webkit-scrollbar {
+     display: none;
+   }
 </style>

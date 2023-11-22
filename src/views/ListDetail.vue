@@ -41,10 +41,8 @@ const cancelFavorite = async () => {
 
 const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
 const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
-// const isFavorite = computed(() => { return favoriteData.value });
 
 onBeforeMount(async () => {
-
     try {
         // 서버에서 gymData 불러오기
         const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
@@ -53,7 +51,7 @@ onBeforeMount(async () => {
 
         // 서버에서 reviewData 불러오기
         const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
-        reviewData.value = reviewResponse.data;
+        reviewData.value = reviewResponse.data.sort((a, b)=> new Date(b.regDate) - new Date(a.regDate));
         isLoading.value = false;
 
         //서버에서 찜 Data 불러오기
