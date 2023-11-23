@@ -22,6 +22,7 @@
 </template>
 <style scoped>
     .gnb_container{
+        max-width:39rem;
         width:39rem;
         height: 6.2rem;
         color:white;
