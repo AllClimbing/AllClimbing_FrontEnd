@@ -2,7 +2,7 @@
     <div class="content_container">
         <form class="login_form" @submit.prevent="login">
             <div class="login_logo_box">
-                <img class='login_logo' src="@/assets/randingPageLogo.svg" alt="">
+                <img class='login_logo' src="@/assets/landingPageLogo.svg" alt="">
                 <h1>AllClimbing</h1>
                 <p>한손에서 시작하는 클라이밍 라이프.</p>
             </div>
