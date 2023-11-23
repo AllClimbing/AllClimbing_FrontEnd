@@ -1,20 +1,13 @@
 <script setup>
-import { onBeforeMount,onMounted, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import '@/assets/css/PlaceList.css';
 import axios from 'axios';
 
 const router = useRouter();
-const listCnt = ref(0);
-const location = ref('');
-const gymIdList = ref([]);
 const gymList = ref([]);
 const wishList = ref([]);
 let isLoading = ref(true);
-
-
-onMounted(() => {
-});
 
 const routeToDetail = (id) => {
   router.push(`/detail/${id}`);
@@ -35,7 +28,7 @@ onBeforeMount(async() => {
             wishList.value = res.data;
             isLoading.value = false;
 
-
+            console.log(wishList.value[0]);
     } catch (e) {
         console.error("데이터 로딩에 실패했습니다");
     }
@@ -59,7 +52,7 @@ onBeforeMount(async() => {
                     class="gym_content_container"
                     v-for="gym in gymList"
                     :key="gym.gymName"
-                    @click="routeToDetail(gym.id)"
+                    @click="routeToDetail(gym.gymId)"
                 >
                     <div class="gym-info__logo"></div>
                     <div class="gym-info__content">
@@ -68,7 +61,6 @@ onBeforeMount(async() => {
                         <div class="gym-info__content__phone">{{gym.contact ? gym.contact : "전화번호를 제공하지 않는 암장입니다."}}</div>
                       </div>
                       <div class="gym-info__content__distance">
-
                       </div>
                 </div>
             </div>

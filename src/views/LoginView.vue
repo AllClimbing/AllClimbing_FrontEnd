@@ -18,7 +18,7 @@ const store = useUserStore();
 const userId = ref(null);
 const password = ref(null);
 
-const login = function(){
+const login = () => {
     store.userLogin(userId.value, password.value);
 }
 

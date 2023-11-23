@@ -136,7 +136,7 @@ const placesSearchCB = (data, status) => {
                     <div class="gym-info__content">
                         <div class="gym-info__content__name">{{gym.place_name}}</div>
                         <div class="gym-info__content__address">{{gym.address_name}}</div>
-                        <div class="gym-info__content__phone">{{gym.phone}}</div>
+                        <div class="gym-info__content__phone">{{gym.phone ? gym.phone : "전화번호를 제공하지 않는 업장입니다."}}</div>
                       </div>
                       <div class="gym-info__content__distance">
                         <div class="distance_section">
