@@ -37,36 +37,16 @@
         </td>
     </tr>
 </table>
+<br>
 
-<br/>
-<br/>
-
-
-### 5️⃣ 폴더 구조
-
-🟢 프론트엔드 폴더 구조
+## 🗂️ 디렉토리 구조
 
 ![frontFolderStructure](https://github.com/jseok0917/jseok0917/assets/139304962/1e2c3be1-492b-4237-a354-54f52c3cab66)
 
-<br>
-<br>
 
-🔴 백엔드 폴더 구조
-
-![backFolderStructure](https://github.com/jseok0917/jseok0917/assets/139304962/6672802e-512f-4abd-b00a-2bc3a187d716)
-
-<br>
-<hr>
-<br>
-
-
-## 📌 프론트엔드 파트 구성도
+## 📌 기술 스택 및 와이어 프레임
 
 ![frontend_structure](https://github.com/jseok0917/jseok0917/assets/139304962/d8a77c02-66ba-497b-98e5-ff5b913b5675)
-
-<br>
-<hr>
-<br>
 
 
 ## 📌 프로젝트_프론트엔드 목표
@@ -76,9 +56,7 @@
 
 🟢 Vue3버전을 활용한 SPA 클라이언트 구현
 
-<br>
-<hr>
-<br>
+
 
 ## 📌 프로젝트_프론트엔드 구현 결과
 
@@ -93,10 +71,6 @@
   - 암장 상세보기 시 서버로부터 암장 정보를 받아온다.
 
   - API통신 및 컴포넌트 리렌더링을 통한 리뷰 작성/조회/수정/삭제가 가능
-
-
-<br>
-<br>
 
 ### 2️⃣ 페이지 구조 및 Routing을 활용한 SPA 구현
 
