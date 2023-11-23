@@ -124,7 +124,7 @@ const placesSearchCB = (data, status) => {
             <p>데이터를 열심히 불러오고 있어요...</p>
           </div>
           <div v-else>
-            <div class='msg'> {{`내 근처에서 갈만한 ${listCnt} 개의 암장을 찾았어요.`}}</div>
+            <div class='msg'> 내 근처에서 갈만한 <span>{{listCnt}}</span> 개의 암장을 찾았어요.</div>
             <div class="gym_list">
                 <div  
                     class="gym_content_container"
@@ -132,7 +132,7 @@ const placesSearchCB = (data, status) => {
                     :key="gym.place_name"
                     @click="routeToDetail(gym.id)"
                 >
-                    <div class="gym-info__logo"></div>
+                    <img src="@/assets/map.svg" alt='지도' class="gym-info__logo" />
                     <div class="gym-info__content">
                         <div class="gym-info__content__name">{{gym.place_name}}</div>
                         <div class="gym-info__content__address">{{gym.address_name}}</div>

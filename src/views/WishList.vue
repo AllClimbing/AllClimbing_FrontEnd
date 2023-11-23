@@ -28,7 +28,6 @@ onBeforeMount(async() => {
             wishList.value = res.data;
             isLoading.value = false;
 
-            console.log(wishList.value[0]);
     } catch (e) {
         console.error("데이터 로딩에 실패했습니다");
     }
@@ -54,13 +53,19 @@ onBeforeMount(async() => {
                     :key="gym.gymName"
                     @click="routeToDetail(gym.gymId)"
                 >
-                    <div class="gym-info__logo"></div>
+                    <img src="@/assets/map.svg" alt='지도' class="gym-info__logo"/>
                     <div class="gym-info__content">
                         <div class="gym-info__content__name">{{gym.gymName}}</div>
                         <div class="gym-info__content__address">{{gym.gymAddress}}</div>
                         <div class="gym-info__content__phone">{{gym.contact ? gym.contact : "전화번호를 제공하지 않는 암장입니다."}}</div>
                       </div>
-                      <div class="gym-info__content__distance">
+                      <div 
+                        class="gym-info__content__distance"
+                        @click.stop=""
+                        >
+                        <a v-bind:href="`tel:010-4580-7180`">
+                            <img class="phone_img" src="@/assets/phone.svg" alt="phone">
+                        </a>
                       </div>
                 </div>
             </div>
@@ -75,10 +80,16 @@ onBeforeMount(async() => {
     align-items: center;
 
     width: 100%;
-    height: 5.8rem;
+    height: 4rem;
     font-size: 1.6rem;
     font-weight: bold;
+
+    margin-bottom: 1rem;
 }
 
+.phone_img{
+    width: 4rem;
+    height: 4rem;
+}
 
 </style>
