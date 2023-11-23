@@ -14,73 +14,69 @@ const gymList = ref([]);
 const router = useRouter();
 const isLoading = ref(true);
 
-//마운트됐을때
-onMounted(() => {
-  nearPlaces();
-});
-
-
 const nearPlaces = () => {
   navigator.geolocation.getCurrentPosition((position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+    const latitude = position.coords.latitude
+    const longitude = position.coords.longitude
 
-      const ps = new kakao.maps.services.Places();
+    const ps = new kakao.maps.services.Places()
 
-      const currentCoordinate = new kakao.maps.LatLng(latitude, longitude);
-    
-      const options = {
-        location: currentCoordinate,
-        radius: 3000,
-        size:6,
-        sort: kakao.maps.services.SortBy.DISTANCE,
-      };
-      // 장소검색 객체를 통해 키워드로 장소검색을 요청합니다
-      ps.keywordSearch("클라이밍", placesSearchCB, options);
-  });
+    const currentCoordinate = new kakao.maps.LatLng(latitude, longitude)
+
+    const options = {
+      location: currentCoordinate,
+      radius: 3000,
+      size: 6,
+      sort: kakao.maps.services.SortBy.DISTANCE
+    }
+    ps.keywordSearch('클라이밍', placesSearchCB, options)
+  })
 }
 
 const searchPlaces = function () {
   navigator.geolocation.getCurrentPosition((position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+    const latitude = position.coords.latitude
+    const longitude = position.coords.longitude
 
-      // eslint-disable-next-line no-undef
-      const ps = new kakao.maps.services.Places();
+    const ps = new kakao.maps.services.Places()
 
-      const keyword = location.value;
+    const keyword = location.value
 
-      if (!keyword.replace(/^\s+|\s+$/g, '')) {
-        alert('키워드를 입력해주세요!');
-        return false;
-      }
+    if (!keyword.replace(/^\s+|\s+$/g, '')) {
+      alert('키워드를 입력해주세요!')
+      return false
+    }
 
-      const currentCoordinate = new kakao.maps.LatLng(latitude, longitude);
-      const options = {
-            location: currentCoordinate,
-            size:8,
-      };
+    const currentCoordinate = new kakao.maps.LatLng(latitude, longitude)
+    const options = {
+      location: currentCoordinate,
+      size: 8
+    }
 
-      ps.keywordSearch(keyword+" 클라이밍", placesSearchCB, options);
-});
+    ps.keywordSearch(keyword + ' 클라이밍', placesSearchCB, options)
+  })
 }
 
 // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
 const placesSearchCB = (data, status) => {
-    switch (status){
-        case kakao.maps.services.Status.OK:
-            isLoading.value = false;
-            gymList.value = data;
-            listCnt.value = data.length;
-            return;
-        case kakao.maps.services.Status.ZERO_RESULT:
-            alert('검색 결과가 존재하지 않습니다.');
-            return;
-        case kakao.maps.services.Status.ERROR:
-            alert('검색 결과 중 오류가 발생했습니다.');
-            return;
-    }
+  switch (status) {
+    case kakao.maps.services.Status.OK:
+      isLoading.value = false
+      gymList.value = data
+      listCnt.value = data.length
+      return
+    case kakao.maps.services.Status.ZERO_RESULT:
+      alert('검색 결과가 존재하지 않습니다.')
+      return
+    case kakao.maps.services.Status.ERROR:
+      alert('검색 결과 중 오류가 발생했습니다.')
+      return
+  }
 }
+
+onMounted(() => {
+  nearPlaces();
+});
 
 </script>
 

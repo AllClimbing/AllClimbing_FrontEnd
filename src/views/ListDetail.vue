@@ -2,17 +2,19 @@
 import "../assets/css/pages/detail.css";
 
 import axios from 'axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user.js';
 
 import { convertRegDate, convertVisitDate } from "@/utils/format.js";
 import { routeForAddReview, routeForUpdateReview} from "@/utils/route.js";
+import { URL } from "@/utils/api.js";
 
 import LoadingImage from "../components/common/LoadingImage.vue";
 
 
 const route = useRoute();
+const router = useRouter();
 const id = ref(route.params.id);
 
 const isLoading = ref(true);
@@ -34,7 +36,7 @@ const keyword = {
 
 const doFavorite = async () => {
     try {
-         await axios.post(`http://localhost:8080/api/gym/favorite/${id.value}`, keyword);
+         await axios.post(`h${URL.GYM_API}favorite/${id.value}`, keyword);
          isFavorite.value = true;
     } catch(e){
         console.log('좋아요 에러');
@@ -43,7 +45,7 @@ const doFavorite = async () => {
 
 const cancelFavorite = async () => {
     try {
-        await axios.post(`http://localhost:8080/api/gym/favorite/delete`, keyword);
+        await axios.post(`${URL.GYM_API}favorite/delete`, keyword);
         isFavorite.value = false;
     } catch(e){
         console.log("찜하기 해제 에러");
@@ -52,7 +54,7 @@ const cancelFavorite = async () => {
 
 const fetchGymData = async () => {
     try {
-        const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
+        const gymResponse = await axios.get(`${URL.GYM_API}${id.value}`);
         gymData.value = gymResponse.data;
         title.value = gymData.value.gymName;
     } catch (e) {
@@ -62,7 +64,7 @@ const fetchGymData = async () => {
 
 const fetchReviewData = async () => {
     try {
-        const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
+        const reviewResponse = await axios.get(`${URL.REVIEW_API}${id.value}`);
         reviewData.value = reviewResponse.data.sort((a, b)=> new Date(b.regDate) - new Date(a.regDate));
         isLoading.value = false;
     } catch (e) {
@@ -72,7 +74,7 @@ const fetchReviewData = async () => {
 
 const fetchFavoriteData = async () => {
     try {
-        const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
+        const favoriteResponse = await axios.post(`${URL.GYM_API}favorite`, keyword);
         isFavorite.value = favoriteResponse.data ? true : false;
     } catch (e) {
         console.error("찜하기 목록 데이터 로딩에 실패했습니다");
@@ -92,7 +94,7 @@ const fetchUserData = async () => {
 
 const deleteReview = async (reviewNo) => {
     try{
-        await axios.delete(`http://localhost:8080/api/review/delete/${reviewNo}`);
+        await axios.delete(`${URL.REVIEW_API}delete/${reviewNo}`);
         reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
     } catch(e){
         console.log("리뷰 삭제 에러");
@@ -191,7 +193,7 @@ onBeforeMount(async () => {
             </div>
             <div class="review_container">
                 <h2>고객 리뷰</h2>
-                <div class="review_add_button" @click="routeForAddReview(route, gymData.gymId)">
+                <div class="review_add_button" @click="routeForAddReview(router, gymData.gymId)">
                     <img src="@/assets/reviewAddBtn.svg" alt="리뷰 작성하기">
                     <p>리뷰 작성하기</p>
                 </div>
