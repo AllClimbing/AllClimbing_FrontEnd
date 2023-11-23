@@ -1,32 +1,42 @@
 <script setup>
+import "../assets/css/pages/detail.css";
+
+import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
 import { onBeforeMount, ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user.js';
-import axios from 'axios';
+
+import { convertRegDate, convertVisitDate } from "@/utils/format.js";
+import { routeForAddReview, routeForUpdateReview} from "@/utils/route.js";
+import { URL } from "@/utils/api.js";
+
+import LoadingImage from "../components/common/LoadingImage.vue";
+
 
 const route = useRoute();
 const router = useRouter();
 const id = ref(route.params.id);
+
 const isLoading = ref(true);
 const gymData = ref({});
 const reviewData = ref([]);
 const title = ref("제목");
 const displayCount = ref(4);
 const userData = ref(null);
+const isFavorite = ref(false);
 
-const token = localStorage.getItem('access-token').split('.')
-const userId = JSON.parse(atob(token[1]))['userId'];
+const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
+const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
 
 const loginUserId = useUserStore().loginUserId;
 const keyword = {
     userId: loginUserId,
     gymId: route.params.id
 };
-const isFavorite = ref(false);
 
 const doFavorite = async () => {
     try {
-        const res =  await axios.post(`http://localhost:8080/api/gym/favorite/${id.value}`, keyword);
+         await axios.post(`h${URL.GYM_API}favorite/${id.value}`, keyword);
          isFavorite.value = true;
     } catch(e){
         console.log('좋아요 에러');
@@ -35,45 +45,60 @@ const doFavorite = async () => {
 
 const cancelFavorite = async () => {
     try {
-        const res =  await axios.post(`http://localhost:8080/api/gym/favorite/delete`, keyword);
+        await axios.post(`${URL.GYM_API}favorite/delete`, keyword);
         isFavorite.value = false;
     } catch(e){
         console.log("찜하기 해제 에러");
     }
 }
 
-const displayedReview = computed(() => reviewData.value.slice(0, displayCount.value));
-const hasMoreItems = computed(() => displayCount.value < reviewData.value.length);
-
-onBeforeMount(async () => {
+const fetchGymData = async () => {
     try {
-        // 서버에서 gymData 불러오기
-        const gymResponse = await axios.get(`http://localhost:8080/api/gym/${id.value}`);
+        const gymResponse = await axios.get(`${URL.GYM_API}${id.value}`);
         gymData.value = gymResponse.data;
         title.value = gymData.value.gymName;
-
-        // 서버에서 reviewData 불러오기
-        const reviewResponse = await axios.get(`http://localhost:8080/api/review/${id.value}`);
-        reviewData.value = reviewResponse.data.sort((a, b)=> new Date(b.regDate) - new Date(a.regDate));
-        isLoading.value = false;
-
-        //서버에서 찜 Data 불러오기
-        const favoriteResponse = await axios.post(`http://localhost:8080/api/gym/favorite`, keyword);
-        isFavorite.value = favoriteResponse.data ? true : false;
-
-        const res = await axios.get(`http://localhost:8080/api/user/${userId}`);
-        userData.value = res.data;
     } catch (e) {
-        console.error("데이터 로딩에 실패했습니다");
+        console.error("암장 데이터 로딩에 실패했습니다");
     }
-});
-
-const convertVisitDate = (date) => {
-    return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} 방문`;
 }
 
-const convertRegDate = (date) => {
-    return `${date.substring(2, 4)}.${date.substring(5, 7)}.${date.substring(8, 10)} ${date.substring(11, 13)}:${date.substring(14, 16)} 작성`;
+const fetchReviewData = async () => {
+    try {
+        const reviewResponse = await axios.get(`${URL.REVIEW_API}${id.value}`);
+        reviewData.value = reviewResponse.data.sort((a, b)=> new Date(b.regDate) - new Date(a.regDate));
+        isLoading.value = false;
+    } catch (e) {
+        console.error("리뷰 데이터 로딩에 실패했습니다");
+    }
+}
+
+const fetchFavoriteData = async () => {
+    try {
+        const favoriteResponse = await axios.post(`${URL.GYM_API}favorite`, keyword);
+        isFavorite.value = favoriteResponse.data ? true : false;
+    } catch (e) {
+        console.error("찜하기 목록 데이터 로딩에 실패했습니다");
+    }
+}
+
+const fetchUserData = async () => {
+    const token = localStorage.getItem('access-token').split('.')
+    const userId = JSON.parse(atob(token[1]))['userId'];
+    try {
+        const userResponse = await axios.get(`http://localhost:8080/api/user/${userId}`);
+        userData.value = userResponse.data;
+    } catch (e) {
+        console.error("유저 정보 데이터 로딩에 실패했습니다");
+    }
+}
+
+const deleteReview = async (reviewNo) => {
+    try{
+        await axios.delete(`${URL.REVIEW_API}delete/${reviewNo}`);
+        reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
+    } catch(e){
+        console.log("리뷰 삭제 에러");
+    }
 }
 
 const showMoreReviews = () => {
@@ -86,39 +111,18 @@ const showMoreReviews = () => {
     }
 }
 
-const RouteForAddReview = (id) => {
-    router.push(`/review/${id}`);
-}
-
-const RouteForUpdateReview = (gymId, reviewNo) => {
-    router.push(`/review/${gymId}/${reviewNo}`);
-}
-
-const deleteReview = async (reviewNo) => {
-
-    try{
-        await axios.delete(`http://localhost:8080/api/review/delete/${reviewNo}`);
-        // 프론트엔드에서 삭제한 데이터 반영해 렌더링
-        reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
-
-    } catch(e){
-        console.log("리뷰 삭제 에러");
-    }
-
-}
-
-const editReview = async (reviewId) => {
-
-}
+onBeforeMount(async () => {
+    await fetchGymData();
+    await fetchReviewData();
+    await fetchFavoriteData();
+    await fetchUserData();
+});
 
 </script>
 
 <template>
     <div class="content-container">
-        <div class="loadingMsg" v-if="isLoading">
-            <img src="@/assets/loading.svg" alt="로딩중...">
-            <p>데이터를 열심히 불러오고 있어요...</p>
-        </div>
+        <LoadingImage v-if="isLoading" />
         <div v-else>
             <div class="header">
                 <div class="left_button" @click="$router.go(-1)"><img src="@/assets/backArrow.svg"></div>
@@ -189,7 +193,7 @@ const editReview = async (reviewId) => {
             </div>
             <div class="review_container">
                 <h2>고객 리뷰</h2>
-                <div class="review_add_button" @click="RouteForAddReview(gymData.gymId)">
+                <div class="review_add_button" @click="routeForAddReview(router, gymData.gymId)">
                     <img src="@/assets/reviewAddBtn.svg" alt="리뷰 작성하기">
                     <p>리뷰 작성하기</p>
                 </div>
@@ -209,7 +213,7 @@ const editReview = async (reviewId) => {
                                 <img 
                                     src="@/assets/review_edit.svg" 
                                     alt="수정하기"
-                                    @click="RouteForUpdateReview(gymData.gymId, review.reviewNo)"
+                                    @click="routeForUpdateReview(route, gymData.gymId, review.reviewNo)"
                                 >
                                 <img 
                                     src="@/assets/review_delete.svg" 
@@ -232,336 +236,4 @@ const editReview = async (reviewId) => {
 </template>
 
 <style scoped>
-.content-container {
-    max-width: 39rem;
-    min-height: 69.5rem;
-    width: 39rem;
-    height: 94vh;
-    margin: 0 auto;
-    overflow-x:hidden;
-    overflow-y: scroll;
-
-    color: white;
-    background-color: #292929;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    width: 100%;
-    height: 5.8rem;
-    font-size: 1.6rem;
-    font-weight: bold;
-
-}
-
-.left_button {
-    width: 2.4rem;
-    height: 2.4rem;
-    margin-left: 1.6rem;
-
-    margin-top: 0.2rem;
-    cursor: pointer;
-}
-
-.right_button {
-    cursor: pointer;
-    width: 5rem;
-    height: 5rem;
-}
-
-.right_button img {
-    width: 3rem;
-    height: 3rem;
-
-    margin-top: 1rem;
-    cursor: pointer;
-}
-
-.msg {
-    font-size: 1.4rem;
-    text-align: center;
-    margin-bottom: 3.4rem;
-  }
-  
-  .loadingMsg {
-    font-size: 2.4rem;
-    text-align: center;
-    margin-bottom: 3.4rem;
-    height: 82vh;
-    min-height: 60vh;
-  
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .loadingMsg img {
-    width: 10rem;
-    height: 10rem;
-    margin-bottom: 1.6rem;
-  }
-
-.gym_info {
-    width: 100%;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: start;
-    margin-left: 1.6rem;
-    margin-bottom: 1.6rem;
-}
-
-.gym_info_external {
-    width: 35.8rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: start;
-    margin-left: 1.6rem;
-}
-
-.gym_info_content {
-    width: 34.8rem;
-    background-color: #1C1C1C;
-
-    border-radius: 0.5rem;
-    padding-left: 1rem;
-    font-size: 1.4rem;
-    line-height: 0.5rem;
-
-    color: #cccccc;
-}
-
-.external_link {
-    color: #36DDAB;
-    text-decoration: none;
-}
-
-.pill_badge_container {
-    width: 100%;
-    height: 100%;
-    margin-top: 1.6rem;
-    margin-left: 1.6rem;
-    margin-bottom: 1.6rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: start;
-    margin-left: 1.6rem;
-}
-
-#badge {
-    background-color: #36DDAB;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    white-space: nowrap;
-
-    width: 100%;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: start;
-    margin-left: 0.5rem;
-    margin-bottom: 0.8rem;
-
-    display: inline-block;
-    width: auto;
-    white-space: nowrap;
-}
-
-.review_container {
-    width: 32rem;
-    height: 100%;
-    margin-left: 1.6rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: start;
-}
-
-.review_add_button {
-    width: 33.8rem;
-    height: 3.2rem;
-    background-color: #4A4A4A;
-    border-radius: 0.5rem;
-
-    padding: 0.5rem 1rem;
-    margin-bottom: 1.6rem;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #cccccc;
-
-    cursor: pointer;
-}
-
-.review_add_button > img {
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-right: 0.5rem;
-}
-
-.review_content {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: start;
-}
-
-.review_card {
-    width: 100%;
-    height: 100%;
-
-    background-color: #1C1C1C;
-    border-radius: 0.5rem;
-    padding: 0.75rem 2rem;
-
-    margin-bottom: 1.6rem;
-}
-
-.header_section {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: start;
-
-    font-size: 1.3rem;
-}
-
-.header_section img {
-    width: 2.4rem;
-    height: 2.4rem;
-
-    margin: 0.5rem;
-    margin-top: 0.7rem;
-}
-
-.review_writer {
-    margin: 1rem;
-    flex-grow: 2;
-}
-
-.review_content {
-    font-size: 1.3rem;
-}
-
-.reg_date {
-    margin-top: 1rem;
-    font-size: 1.3rem;
-    text-align: right;
-    color: #cccccc;
-}
-
-.visit_date {
-    margin-top: 1rem;
-    font-size: 1.3rem;
-    text-align: right;
-    color: #cccccc;
-}
-
-.show_more_button_container {
-    width: 100%;
-    height: 100%;
-
-    margin-left: 2rem;
-    margin-bottom: 1rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.show_more_button {
-    width: 10rem;
-    height: 3.2rem;
-    background-color: #4A4A4A;
-    border-radius: 1rem;
-
-    padding: 0.5rem 1rem;
-    margin-bottom: 2rem;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #cccccc;
-
-    cursor: pointer;
-}
-
-.external_icon_content {
-    width: 35.8rem;
-    height: 100%;
-    border-radius: 0.5rem;
-
-    padding: 1.2rem 0 0 0;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-
-    background-color: #1C1C1C;
-}
-
-.external_icon {
-    cursor: pointer;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    font-size: 1.3rem;
-    color: #cccccc;
-
-}
-
-.external_icon img {
-    width: 4rem;
-    height: 4rem;
-}
-
-.review_edit {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-
-    font-size: 1.3rem;
-    color: #cccccc;
-}
-
-.review_edit img {
-    margin-left: 1rem;
-    cursor: pointer;
-}
-
 </style>
