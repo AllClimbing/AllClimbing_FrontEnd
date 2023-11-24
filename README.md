@@ -60,9 +60,156 @@
 
   - 로그인 성공시 서버로부터 JWT를 localStorage에 저장한다.
 
+```javascript
+//Jwt를 활용한 로그인 구현
+const REST_USER_API = `http://localhost:8080/api/user`
+
+export const useUserStore = defineStore('user', () => {
+  const loginUserId = ref('')
+  const userLogin = (userId, password) => {
+    axios
+      .post(`${REST_USER_API}/login`, { userId, password })
+      .then((response) => {
+        localStorage.setItem('access-token', response.data)
+
+        const token = response.data.split('.')
+        loginUserId.value = (JSON.parse(atob(token[1])))['userId']
+        
+      })
+      .then(() => {
+        router.push('/list')
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+  }
+
+  return { userLogin, loginUserId }
+})
+```
+<br>
+<br>
+
   - 전역 navigation guard를 이용하여 페이지 라우팅마다 로그인 상태를 확인함
 
-  - API통신 및 컴포넌트 리렌더링을 통한 리뷰 작성/조회/수정/삭제 가능
+```javascript
+// Jwt 토큰을 활용한 로그인 전역가드 설정
+router.beforeEach(async (to, from, next) => {
+  //페이지가 바뀔때마다 서버로 토큰을 보내 유효성을 검사한다.
+  if (to.name === 'login') {
+    return next()
+  }
+
+  const token = window.localStorage.getItem('access-token')
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return next('/login')
+  }
+
+  try {
+    const response = await axios.get('http://localhost:8080/api/user/validation?token=' + token);
+    const isAuth = response.data;
+    
+    
+
+    if (isAuth) {
+      useUserStore().loginUserId = ((JSON.parse(atob((token.split("."))[1])))['userId'])
+      next();
+
+    } else {
+      alert('로그인이 필요합니다.')
+      next('/login')
+    }
+  } catch (error) {
+    console.error('Error sending data to server:', error)
+    alert('로그인이 필요합니다.')
+    next('/login')
+  }
+})
+```
+<br>
+<br>
+
+  - API통신 및 컴포넌트 리렌더링을 통한 암장, 리뷰 목록 조회/작성/수정/삭제 가능
+
+```javascript
+//암장목록 조회 로직
+const fetchGymData = async () => {
+    try {
+        const gymResponse = await axios.get(`${URL.GYM_API}${id.value}`);
+        gymData.value = gymResponse.data;
+        title.value = gymData.value.gymName;
+    } catch (e) {
+        console.error("암장 데이터 로딩에 실패했습니다");
+    }
+}
+
+//리뷰작성 로직(파일도 업로드 가능하도록)
+const review = ref({})
+
+    const textInput = ref(null);
+    const selectedImage = ref(null);
+    const visitDate = ref(null);
+
+    const submitForm = () => {
+      let formData = new FormData()
+      review.value.content = textInput.value;
+      review.value.visitDate = visitDate.value;
+      //formDate에 담아서 전송
+      formData.append('review', new Blob([JSON.stringify(review.value)], { type: 'application/json' }))
+      formData.append('image', selectedImage.value)
+
+      axios
+        .post(`${URL.REVIEW_API}write`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then(() => {
+          router.push('/detail/'+gymId.value);
+        })
+        .catch((e) => {
+          console.error('Error sending data to server:', e)
+        })
+    }
+
+//리뷰 삭제 로직
+const deleteReview = async (reviewNo) => {
+    try{
+        await axios.delete(`${URL.REVIEW_API}delete/${reviewNo}`);
+        reviewData.value = reviewData.value.filter((review) => review.reviewNo !== reviewNo);
+    } catch(e){
+        console.log("리뷰 삭제 에러");
+    }
+}
+```
+<br>
+<br>
+  - 컴포넌트 리렌더링과 서버 통신을 이용한 찜/찜해제 기능 추가
+
+```javascript
+//찜 기능
+const doFavorite = async () => {
+    try {
+         await axios.post(`h${URL.GYM_API}favorite/${id.value}`, keyword);
+         isFavorite.value = true;
+    } catch(e){
+        console.log('좋아요 에러');
+    }
+}
+
+//찜 해제 기능
+const cancelFavorite = async () => {
+    try {
+        await axios.post(`${URL.GYM_API}favorite/delete`, keyword);
+        isFavorite.value = false;
+    } catch(e){
+        console.log("찜하기 해제 에러");
+    }
+}
+```
+
+
 
 ### 2️⃣ 페이지 구조 및 Routing을 활용한 SPA 구현
 
