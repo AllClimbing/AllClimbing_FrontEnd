@@ -36,7 +36,7 @@ const keyword = {
 
 const doFavorite = async () => {
     try {
-         await axios.post(`h${URL.GYM_API}favorite/${id.value}`, keyword);
+         await axios.post(`${URL.GYM_API}favorite/${id.value}`, keyword);
          isFavorite.value = true;
     } catch(e){
         console.log('좋아요 에러');
