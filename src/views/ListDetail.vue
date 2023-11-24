@@ -213,7 +213,7 @@ onBeforeMount(async () => {
                                 <img 
                                     src="@/assets/review_edit.svg" 
                                     alt="수정하기"
-                                    @click="routeForUpdateReview(route, gymData.gymId, review.reviewNo)"
+                                    @click="routeForUpdateReview(router, gymData.gymId, review.reviewNo)"
                                 >
                                 <img 
                                     src="@/assets/review_delete.svg" 
